@@ -1,0 +1,21 @@
+@import "node_modules/nomad-universal/lib/styles/variable";
+
+.custom-view {
+
+}
+
+.custom-view-header--no-avatar {
+  display: none;
+}
+
+.custom-view-panel {
+  background-color: $white;
+}
+
+.detail {
+  padding: .5rem .125rem;
+
+  &__content {
+    border: 1px solid $gray-100;
+  }
+}
