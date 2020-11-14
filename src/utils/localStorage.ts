@@ -1,4 +1,5 @@
 import {dotName, parseUsername, serializeUsername} from "nomad-universal/lib/utils/user";
+import SECP256k1Signer from "fn-client/lib/crypto/signer";
 
 let pk: string = '';
 
@@ -8,6 +9,24 @@ export const setPK = (privateKey: string) => {
 
 export const clearPK = () => {
   pk = '';
+};
+
+export const sign = (data: Buffer) => {
+  const hex = Buffer.from(pk, 'base64').toString('hex');
+  const signer = SECP256k1Signer.fromHexPrivateKey(hex);
+  return signer.sign(data);
+};
+
+export const downloadPK = () => {
+  const token = localStorage.getItem('nomad_token');
+  const username = localStorage.getItem('nomad_username');
+  const element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(token!));
+  element.setAttribute('download', `${username}.keystore`);
+  element.style.display = 'none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
 };
 
 export const getIdentity = () => {

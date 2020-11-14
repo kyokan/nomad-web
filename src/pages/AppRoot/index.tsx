@@ -1,5 +1,5 @@
-import React, {ChangeEvent, ReactElement, ReactNode, useCallback, useEffect} from "react";
-import {Redirect, Route, Switch} from "react-router";
+import React, {ReactElement, ReactNode, useCallback, useEffect} from "react";
+import {Redirect, Route, Switch, withRouter, RouteComponentProps} from "react-router";
 import "../index.scss";
 import "./root.scss";
 import "./styles/menu.scss";
@@ -24,32 +24,29 @@ import SearchView from "nomad-universal/lib/components/SearchView";
 import SearchPanels from "nomad-universal/lib/components/SearchPanels";
 import SavedView from "nomad-universal/lib/components/SavedView";
 import SavedViewPanels from "nomad-universal/lib/components/SavedViewPanels";
-import {useBlockUser, useFollowUser, useLikePage, useSendPost} from "nomad-universal/lib/ducks/posts";
+import {useBlockUser, useFollowUser, useLikePage} from "nomad-universal/lib/ducks/posts";
 import {useSendReply} from "nomad-universal/lib/ducks/drafts/replies";
 import AppHeader from "nomad-universal/lib/components/AppHeader";
-import {clearPK, getIdentity, isLoggedIn, setIdentity, setPK} from "../../utils/localStorage";
+import {clearPK, downloadPK, getIdentity, isLoggedIn, setIdentity, setPK} from "../../utils/localStorage";
 import {serializeUsername} from "nomad-universal/lib/utils/user";
 import FollowingView from "nomad-universal/lib/components/UserView/FollowingView";
 import FollowersView from "nomad-universal/lib/components/UserView/FollowersView";
 import BlocksView from "nomad-universal/lib/components/UserView/BlocksView";
-import {useCreateNewView, useFetchCurrentUserData, useSaveCustomView} from "../../utils/hooks";
+import {useCreateNewView, useFetchCurrentUserData, useSaveCustomView, useSendPost} from "../../utils/hooks";
 import Settings from "../Setting";
 import ComposeView from "nomad-universal/lib/components/ComposeView";
 import {decrypt, encrypt} from "nomad-universal/lib/utils/key";
 // import ComposeViewPanels from "nomad-universal/lib/components/ComposeViewPanels";
 // import {INDEXER_API} from "nomad-universal/lib/utils/api";
 
-export default function Root(): ReactElement {
+export default withRouter(Root);
+function Root(props: RouteComponentProps): ReactElement {
   const dispatch = useDispatch();
   const currentUsername = useCurrentUsername();
   const fetchUser = useFetchUser();
   const fetchCurrentUserData = useFetchCurrentUserData();
 
-  const {
-    token,
-    tld,
-    subdomain,
-  } = getIdentity();
+  const {token, tld, subdomain} = getIdentity();
 
   useEffect(() => {
     (async function onAppMount() {
@@ -85,9 +82,9 @@ export default function Root(): ReactElement {
       <AppHeader
         logoUrl={Logo}
         // @ts-ignore
-        onLogout={() => {
-          clearPK();
-        }}
+        onLogout={clearPK}
+        onDownloadKeystore={downloadPK}
+        onSetting={isLoggedIn() ? () => props.history.push('/settings') : undefined}
         signupText="Add User"
         signup
       />
@@ -103,10 +100,10 @@ export default function Root(): ReactElement {
 
 
 function renderSummary(): ReactNode {
+  const dispatch = useDispatch();
   const onLikePost = useLikePage();
   const onBlockUser = useBlockUser();
   const onFollowUser = useFollowUser();
-  const dispatch = useDispatch();
   const onSendReply = useSendReply();
   const onSendPost = useSendPost();
 
@@ -259,6 +256,7 @@ function renderSummary(): ReactNode {
       <Route path="/write">
         <ComposeView
           onFileUpload={() => Promise.reject('not supported')}
+          // @ts-ignore
           onSendPost={onSendPost}
         />
       </Route>
