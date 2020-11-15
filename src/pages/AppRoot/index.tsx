@@ -11,6 +11,7 @@ import {
   addUser,
   fetchUserFollowings,
   fetchUserLikes, setCurrentUser,
+  fetchUserBlocks,
   useCurrentUsername,
   useFetchUser
 } from "nomad-universal/lib/ducks/users";
@@ -24,20 +25,25 @@ import SearchView from "nomad-universal/lib/components/SearchView";
 import SearchPanels from "nomad-universal/lib/components/SearchPanels";
 import SavedView from "nomad-universal/lib/components/SavedView";
 import SavedViewPanels from "nomad-universal/lib/components/SavedViewPanels";
-import {useBlockUser, useFollowUser, useLikePage} from "nomad-universal/lib/ducks/posts";
-import {useSendReply} from "nomad-universal/lib/ducks/drafts/replies";
 import AppHeader from "nomad-universal/lib/components/AppHeader";
 import {clearPK, downloadPK, getIdentity, isLoggedIn, setIdentity, setPK} from "../../utils/localStorage";
 import {serializeUsername} from "nomad-universal/lib/utils/user";
 import FollowingView from "nomad-universal/lib/components/UserView/FollowingView";
 import FollowersView from "nomad-universal/lib/components/UserView/FollowersView";
 import BlocksView from "nomad-universal/lib/components/UserView/BlocksView";
-import {useCreateNewView, useFetchCurrentUserData, useSaveCustomView, useSendPost} from "../../utils/hooks";
+import {
+  useCreateNewView,
+  useFetchCurrentUserData,
+  useLikePost,
+  useSaveCustomView,
+  useSendPost,
+  useSendReply,
+  useFollowUser,
+  useBlockUser,
+} from "../../utils/hooks";
 import Settings from "../Setting";
 import ComposeView from "nomad-universal/lib/components/ComposeView";
 import {decrypt, encrypt} from "nomad-universal/lib/utils/key";
-// import ComposeViewPanels from "nomad-universal/lib/components/ComposeViewPanels";
-// import {INDEXER_API} from "nomad-universal/lib/utils/api";
 
 export default withRouter(Root);
 function Root(props: RouteComponentProps): ReactElement {
@@ -62,6 +68,7 @@ function Root(props: RouteComponentProps): ReactElement {
         await fetchUser(currentUsername);
         await dispatch(fetchUserLikes(currentUsername));
         await dispatch(fetchUserFollowings(currentUsername));
+        await dispatch(fetchUserBlocks(currentUsername));
       }
 
       await fetchCurrentUserData()
@@ -101,7 +108,7 @@ function Root(props: RouteComponentProps): ReactElement {
 
 function renderSummary(): ReactNode {
   const dispatch = useDispatch();
-  const onLikePost = useLikePage();
+  const onLikePost = useLikePost();
   const onBlockUser = useBlockUser();
   const onFollowUser = useFollowUser();
   const onSendReply = useSendReply();
