@@ -1,17 +1,20 @@
 import {useCallback} from "react";
 import {useDispatch} from "react-redux";
-import {useCurrentUsername, UsersActionType} from "nomad-universal/lib/ducks/users";
+import {
+  useCurrentUser,
+  useCurrentUsername,
+  useFetchBlobInfo,
+  User,
+  UsersActionType,
+} from "nomad-universal/lib/ducks/users";
 import {CustomViewProps} from "nomad-universal/lib/ducks/views";
-import {DraftPost} from "nomad-universal/src/ducks/drafts/type";
-import {NapiResponse, RelayerNewPostResponse} from "nomad-universal/src/utils/types";
-import {mapDraftToPostPayload} from "nomad-universal/src/utils/posts";
-import {INDEXER_API} from "nomad-universal/src/utils/api";
-import {PostType} from "nomad-universal/src/types/posts";
-import {serializeUsername} from "nomad-universal/src/utils/user";
-import {createNewPost, updatePost} from "nomad-universal/src/ducks/posts";
+import {DraftPost} from "nomad-universal/lib/ducks/drafts/type";
+import {mapDraftToPostPayload} from "nomad-universal/lib/utils/posts";
+import {INDEXER_API} from "nomad-universal/lib/utils/api";
+import {PostType} from "nomad-universal/lib/types/posts";
+import {serializeUsername} from "nomad-universal/lib/utils/user";
+import {createNewPost, updatePost} from "nomad-universal/lib/ducks/posts";
 import {getIdentity, sign} from "./localStorage";
-import {Post} from "fn-client/lib/application/Post";
-import {Envelope} from "fn-client/lib/application/Envelope";
 
 export const useCreateNewView = () => {
   const dispatch = useDispatch();
@@ -132,8 +135,11 @@ export function useFetchCurrentUserData () {
 
 export const useSendPost = () => {
   const dispatch = useDispatch();
+  const currentUser: User = useCurrentUser();
+  const fetchBlobInfo = useFetchBlobInfo();
 
-  return useCallback(async (draft: DraftPost) => {
+  return useCallback(async (draft: DraftPost, truncate?) => {
+    await fetchBlobInfo(currentUser.name);
     const payload = mapDraftToPostPayload(draft);
     const {tld} = getIdentity();
     const post = {
@@ -153,38 +159,18 @@ export const useSendPost = () => {
       body: JSON.stringify({
         tld,
         post,
+        offset: currentUser.currentBlobOffset,
+        truncate,
       }),
     });
     const json = await resp.json();
     const {refhash, sealedHash, envelope} = json.payload;
-    // const msg = new Post(
-    //   0,
-    //   payload.content,
-    //   payload.title || null,
-    //   payload.parent || null,
-    //   null,
-    //   [],
-    //   0,
-    //   0,
-    //   0,
-    // );
-
-    // const env = await Envelope.createWithMessage(
-    //   0,
-    //   tld,
-    //   null,
-    //   '',
-    //   msg,
-    // );
-
-    // const wire =  env.toWire(0);
     const sig = sign(Buffer.from(sealedHash, 'hex'));
 
     const resp2 = await fetch(`${INDEXER_API}/relayer/commit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // 'X-API-Token': token || '',
       },
       body: JSON.stringify({
         tld,
@@ -193,10 +179,12 @@ export const useSendPost = () => {
         sealedHash,
         sig: sig.toString('hex'),
         refhash,
+        offset: currentUser.currentBlobOffset,
+        truncate,
       }),
     });
 
-    const json2: any = await resp.json();
+    const json2: any = await resp2.json();
 
     if (json2.error) {
       throw new Error(json2.payload as string);
@@ -216,5 +204,10 @@ export const useSendPost = () => {
     })));
 
     return json.payload;
-  }, [dispatch]);
+  }, [
+    dispatch,
+    currentUser.currentBlobOffset,
+    currentUser.name,
+    fetchBlobInfo,
+  ]);
 };
