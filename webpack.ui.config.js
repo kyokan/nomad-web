@@ -66,10 +66,7 @@ module.exports = [
     ],
     devtool: 'source-map',
     resolve: {
-      extensions: ['.ts', '.tsx', '.js', '.jsx', '.png', '.svg'],
-      modules: [
-        path.resolve('./node_modules')
-      ]
+      extensions: ['.ts', '.tsx', '.js', '.jsx', '.png', '.svg']
     },
     module: {
       rules: [
