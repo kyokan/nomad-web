@@ -81,7 +81,7 @@
     "marked": "^0.8.0",
     "moment": "^2.24.0",
     "nomad-api": "^0.2.0",
-    "nomad-universal": "^0.3.0",
+    "nomad-universal": "^0.4.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-redux": "^7.2.0",
