@@ -13,7 +13,7 @@ import {
   fetchUserLikes, setCurrentUser,
   fetchUserBlocks,
   useCurrentUsername,
-  useFetchUser
+  useFetchUser, useFetchBlobInfo
 } from "nomad-universal/lib/ducks/users";
 import {useDispatch} from "react-redux";
 import HomeView from "nomad-universal/lib/components/HomeView";
@@ -52,10 +52,15 @@ function Root(props: RouteComponentProps): ReactElement {
   const fetchUser = useFetchUser();
   const fetchCurrentUserData = useFetchCurrentUserData();
 
-  const {token, tld, subdomain} = getIdentity();
+
+  const logout = useCallback(async () => {
+    await clearPK();
+  }, []);
 
   useEffect(() => {
     (async function onAppMount() {
+      const {token, tld, subdomain} = getIdentity();
+
       if (token) {
         await dispatch(addIdentity(tld));
       }
@@ -71,14 +76,10 @@ function Root(props: RouteComponentProps): ReactElement {
         await dispatch(fetchUserBlocks(currentUsername));
       }
 
-      await fetchCurrentUserData()
     }());
   }, [
     currentUsername,
     fetchUser,
-    token,
-    tld,
-    subdomain,
   ]);
 
   const summary = renderSummary();
@@ -88,8 +89,7 @@ function Root(props: RouteComponentProps): ReactElement {
     <div className="app">
       <AppHeader
         logoUrl={Logo}
-        // @ts-ignore
-        onLogout={clearPK}
+        onLogout={logout}
         onDownloadKeystore={downloadPK}
         onSetting={isLoggedIn() ? () => props.history.push('/settings') : undefined}
         signupText="Add User"
@@ -113,15 +113,18 @@ function renderSummary(): ReactNode {
   const onFollowUser = useFollowUser();
   const onSendReply = useSendReply();
   const onSendPost = useSendPost();
+  const fetchUser = useFetchUser();
+  const fetchBlob = useFetchBlobInfo();
+  const currentUsername = useCurrentUsername();
 
   const onTLDLogin = useCallback(async (tld: string, password: string) => {
     const {token} = getIdentity();
     const privateKey = decrypt(token!, password);
     if (!privateKey) throw new Error('Cannot decrypt token');
     setPK(privateKey!);
-    dispatch(addUser(tld));
     dispatch(setCurrentUser(tld));
-  }, [dispatch]);
+    await fetchUser(tld);
+  }, [dispatch, fetchUser]);
 
   const onAddTLD = useCallback(async (tld: string, password: string, privateKey: string) => {
     const token = encrypt(privateKey, password);
@@ -134,6 +137,17 @@ function renderSummary(): ReactNode {
   const onSearch = useCallback(async (username: string) => {
     return [];
   }, []);
+
+  useEffect(() => {
+    (async function() {
+      if (currentUsername) {
+        await fetchUser(currentUsername);
+        await fetchBlob(currentUsername);
+      }
+    })()
+  }, [
+    currentUsername,
+  ]);
 
   return (
     <Switch>

@@ -9,6 +9,7 @@ import {
   useFetchBlobInfo,
   User,
   UsersActionType,
+  fetchBlobOffset,
 } from "nomad-universal/lib/ducks/users";
 import {CustomViewProps} from "nomad-universal/lib/ducks/views";
 import {DraftPost} from "nomad-universal/lib/ducks/drafts/type";
@@ -141,10 +142,9 @@ export function useFetchCurrentUserData () {
 export const useSendPost = () => {
   const dispatch = useDispatch();
   const currentUser: User = useCurrentUser();
-  const fetchBlobInfo = useFetchBlobInfo();
 
   return useCallback(async (draft: DraftPost, truncate?) => {
-    await fetchBlobInfo(currentUser.name);
+    const offset = await fetchBlobOffset(currentUser.name);
     const payload = mapDraftToPostPayload(draft);
     const {tld} = getIdentity();
     const post = {
@@ -164,7 +164,7 @@ export const useSendPost = () => {
       body: JSON.stringify({
         tld,
         post,
-        offset: currentUser.currentBlobOffset,
+        offset: offset,
         truncate,
       }),
     });
@@ -184,7 +184,7 @@ export const useSendPost = () => {
         sealedHash,
         sig: sig.toString('hex'),
         refhash,
-        offset: currentUser.currentBlobOffset,
+        offset: offset,
         truncate,
       }),
     });
@@ -211,9 +211,7 @@ export const useSendPost = () => {
     return json.payload;
   }, [
     dispatch,
-    currentUser.currentBlobOffset,
     currentUser.name,
-    fetchBlobInfo,
   ]);
 };
 
@@ -228,7 +226,7 @@ export const useSendReply = () => {
 
   return useCallback(async (id: string) => {
     dispatch(setSendingReplies(true));
-    await fetchBlobInfo(currentUser.name);
+    const offset = await fetchBlobOffset(currentUser.name);
 
     const reply = replies[id];
 
@@ -250,7 +248,7 @@ export const useSendReply = () => {
     const {refhash, sealedHash, envelope} = await precommit({
       tld,
       post,
-      offset: currentUser.currentBlobOffset,
+      offset,
     });
 
     const sig = sign(Buffer.from(sealedHash, 'hex'));
@@ -262,7 +260,7 @@ export const useSendReply = () => {
       sealedHash,
       sig: sig.toString('hex'),
       refhash,
-      offset: currentUser.currentBlobOffset,
+      offset,
     });
 
     dispatch(updatePost(createNewPost({
@@ -283,7 +281,6 @@ export const useSendReply = () => {
     return res;
   }, [
     dispatch,
-    currentUser.currentBlobOffset,
     currentUser.name,
     fetchBlobInfo,
     replies,
@@ -293,12 +290,11 @@ export const useSendReply = () => {
 export const useFollowUser = () => {
   const dispatch = useDispatch();
   const currentUser: User = useCurrentUser();
-  const fetchBlobInfo = useFetchBlobInfo();
 
   return useCallback(async (connecteeTLD: string) => {
     dispatch(setSendingReplies(true));
     const {tld} = getIdentity();
-    await fetchBlobInfo(tld);
+    const offset = await fetchBlobOffset(currentUser.name);
 
     const connection = {
       type: 'FOLLOW',
@@ -308,7 +304,7 @@ export const useFollowUser = () => {
     const {refhash, sealedHash, envelope} = await precommit({
       tld,
       connection,
-      offset: currentUser.currentBlobOffset,
+      offset,
     });
 
     const sig = sign(Buffer.from(sealedHash, 'hex'));
@@ -320,7 +316,7 @@ export const useFollowUser = () => {
       sealedHash,
       sig: sig.toString('hex'),
       refhash,
-      offset: currentUser.currentBlobOffset,
+      offset,
     });
 
     dispatch(addUserFollowings(tld, {
@@ -329,21 +325,18 @@ export const useFollowUser = () => {
     return res;
   }, [
     dispatch,
-    currentUser.currentBlobOffset,
     currentUser.name,
-    fetchBlobInfo,
   ]);
 };
 
 export const useBlockUser = () => {
   const dispatch = useDispatch();
   const currentUser: User = useCurrentUser();
-  const fetchBlobInfo = useFetchBlobInfo();
 
   return useCallback(async (blockeeTLD: string) => {
     dispatch(setSendingReplies(true));
     const {tld} = getIdentity();
-    await fetchBlobInfo(tld);
+    const offset = await fetchBlobOffset(currentUser.name);
 
     const connection = {
       type: 'BLOCK',
@@ -353,7 +346,7 @@ export const useBlockUser = () => {
     const {refhash, sealedHash, envelope} = await precommit({
       tld,
       connection,
-      offset: currentUser.currentBlobOffset,
+      offset,
     });
 
     const sig = sign(Buffer.from(sealedHash, 'hex'));
@@ -365,7 +358,7 @@ export const useBlockUser = () => {
       sealedHash,
       sig: sig.toString('hex'),
       refhash,
-      offset: currentUser.currentBlobOffset,
+      offset,
     });
 
     dispatch(addUserBlocks(currentUser.name, {
@@ -374,9 +367,7 @@ export const useBlockUser = () => {
     return res;
   }, [
     dispatch,
-    currentUser.currentBlobOffset,
     currentUser.name,
-    fetchBlobInfo,
   ]);
 };
 
@@ -384,10 +375,9 @@ export const useBlockUser = () => {
 export const useLikePost = () => {
   const dispatch = useDispatch();
   const currentUser: User = useCurrentUser();
-  const fetchBlobInfo = useFetchBlobInfo();
 
   return useCallback(async (reference: string) => {
-    await fetchBlobInfo(currentUser.name);
+    const offset = await fetchBlobOffset(currentUser.name);
     const {tld} = getIdentity();
     const moderation = {
       reference,
@@ -403,7 +393,7 @@ export const useLikePost = () => {
       body: JSON.stringify({
         tld,
         moderation,
-        offset: currentUser.currentBlobOffset,
+        offset,
       }),
     });
     const json = await resp.json();
@@ -418,7 +408,7 @@ export const useLikePost = () => {
       body: JSON.stringify({
         tld,
         moderation,
-        offset: currentUser.currentBlobOffset,
+        offset,
         sig: sig.toString('hex'),
         // precommit data
         date: envelope.timestamp,
@@ -445,9 +435,7 @@ export const useLikePost = () => {
     return json.payload;
   }, [
     dispatch,
-    currentUser.currentBlobOffset,
     currentUser.name,
-    fetchBlobInfo,
   ]);
 };
 
