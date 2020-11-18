@@ -98,16 +98,16 @@
   }
 }
 
-.setting__nav {
+.settings__nav {
   @extend %col-nowrap;
-  background-color: $gray-25;
   border-right: 1px solid $gray-100;
-  padding: .25rem 0;
+  padding: .5rem 0;
+  flex: 0 0 12rem;
 
   &__row {
-    @extend %regular-font;
+    @extend %large-font;
     color: $dark-primary-text;
-    padding: .25rem .75rem;
+    padding: .5rem 1rem;
     cursor: pointer;
     transition:
             background-color 100ms ease-in-out,
@@ -115,28 +115,51 @@
             font-weight 100ms ease-in-out;
 
     &:hover {
-      background-color: $gray-100;
+      background-color: $blue-100;
     }
 
     &:active {
-      background-color: $gray-150;
+      background-color: $blue-200;
     }
 
     &--active {
-      @extend %strong;
-      background-color: $gray-100 !important;
+      @extend %bold;
+      //background-color: $blue-100 !important;
       cursor: default;
+      color: $blue-800;
+
+      &:hover {
+        background-color: transparent;
+      }
+
+      &:active {
+        background-color: transparent;
+      }
+    }
+
+    &--disabled {
+      opacity: .5;
+      cursor: default;
+
+      &:hover {
+        background-color: transparent;
+      }
+
+      &:active {
+        background-color: transparent;
+      }
     }
   }
 }
 
-.setting__content {
+.settings__content {
   @extend %col-nowrap;
+  flex: 1 1 auto;
   overflow-y: auto;
 }
 
 .settings {
-  @extend %col-nowrap;
+  @extend %row-nowrap;
   flex: 1 0 auto;
   overflow-y: auto;
   width: 100%;

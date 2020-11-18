@@ -8,8 +8,10 @@ import replies from "nomad-universal/lib/ducks/drafts/replies";
 import blocklist from "nomad-universal/lib/ducks/blocklist";
 import search from "nomad-universal/lib/ducks/search";
 import views from "nomad-universal/lib/ducks/views";
+import app from "nomad-universal/lib/ducks/app";
 
 const rootReducer = combineReducers({
+  app,
   posts,
   users,
   drafts,

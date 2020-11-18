@@ -31,6 +31,7 @@ import {serializeUsername} from "nomad-universal/lib/utils/user";
 import FollowingView from "nomad-universal/lib/components/UserView/FollowingView";
 import FollowersView from "nomad-universal/lib/components/UserView/FollowersView";
 import BlocksView from "nomad-universal/lib/components/UserView/BlocksView";
+import UserDirectoryView from "nomad-universal/lib/components/UserDirectoryView";
 import {
   useCreateNewView,
   useFetchCurrentUserData,
@@ -44,18 +45,22 @@ import {
 import Settings from "../Setting";
 import ComposeView from "nomad-universal/lib/components/ComposeView";
 import {decrypt, encrypt} from "nomad-universal/lib/utils/key";
+import {useFetchHSDData} from "nomad-universal/lib/ducks/app";
 
 export default withRouter(Root);
 function Root(props: RouteComponentProps): ReactElement {
   const dispatch = useDispatch();
   const currentUsername = useCurrentUsername();
   const fetchUser = useFetchUser();
-  const fetchCurrentUserData = useFetchCurrentUserData();
-
+  const fetchHSDData = useFetchHSDData();
 
   const logout = useCallback(async () => {
     await clearPK();
   }, []);
+
+  useEffect(() => {
+    fetchHSDData();
+  }, [dispatch]);
 
   useEffect(() => {
     (async function onAppMount() {
@@ -201,6 +206,10 @@ function renderSummary(): ReactNode {
           }}
         />
       </Route>
+      <Route path="/directory">
+        <UserDirectoryView
+        />
+      </Route>
       <Route path="/discover">
         <DiscoverView
           onLikePost={onLikePost}
@@ -311,6 +320,9 @@ function renderPanels(): ReactNode {
           onCreateNewView={onCreateNewView}
         />
         </div>
+      </Route>
+      <Route path="/directory">
+        <div className="panels" />
       </Route>
       <Route path="/home">
         <div className="panels" />
