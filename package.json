@@ -60,6 +60,7 @@
   },
   "dependencies": {
     "@types/marked": "^0.7.2",
+    "binstring": "^0.2.1",
     "body-parser": "^1.19.0",
     "classnames": "^2.2.6",
     "cookie-parser": "^1.4.5",
@@ -79,8 +80,8 @@
     "markdown-draft-js": "^2.1.1",
     "marked": "^0.8.0",
     "moment": "^2.24.0",
-    "nomad-api": "^0.2.0",
-    "nomad-universal": "^0.6.0",
+    "nomad-api": "^0.4.0",
+    "nomad-universal": "^1.0.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-redux": "^7.2.2",

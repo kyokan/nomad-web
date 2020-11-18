@@ -1,5 +1,7 @@
 import {dotName, parseUsername, serializeUsername} from "nomad-universal/lib/utils/user";
 import SECP256k1Signer from "fn-client/lib/crypto/signer";
+const ECKey = require('eckey');
+const conv = require('binstring');
 
 let pk: string = '';
 
@@ -15,6 +17,11 @@ export const sign = (data: Buffer) => {
   const hex = Buffer.from(pk, 'base64').toString('hex');
   const signer = SECP256k1Signer.fromHexPrivateKey(hex);
   return signer.sign(data);
+};
+
+export const getPublicKey = async (): Promise<string> => {
+  const key = new ECKey(Buffer.from(pk, 'base64'));
+  return key.publicKey.toString('base64');
 };
 
 export const downloadPK = () => {

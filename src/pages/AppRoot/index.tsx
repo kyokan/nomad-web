@@ -272,7 +272,7 @@ function renderSummary(): ReactNode {
       </Route>
       <Route path="/signup">
         <Onboarding
-          type={OnboardingViewType.LOGIN}
+          type={OnboardingViewType.WELCOME_TO_NOMAD}
           onSubdomainLogin={() => Promise.reject('not supported')}
           onSubdomainSignup={() => Promise.reject('not supported')}
           onTLDLogin={onTLDLogin}

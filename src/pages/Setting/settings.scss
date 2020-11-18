@@ -52,6 +52,7 @@
         &__label {
           @extend %col-nowrap;
           @extend %lite-font;
+          font-weight: 500;
           user-select: none;
           position: relative;
           flex: 1 0 13.5rem;
