@@ -17,6 +17,8 @@ function Settings (props: RouteComponentProps): ReactElement {
     (async function () {
       if (!currentUser?.publicKey) {
         const pubkey = await getPublicKey();
+
+        console.log(pubkey);
         dispatch({
           type: UsersActionType.SET_USER_PUBLIC_KEY,
           payload: {

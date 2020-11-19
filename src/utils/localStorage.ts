@@ -21,7 +21,7 @@ export const sign = (data: Buffer) => {
 
 export const getPublicKey = async (): Promise<string> => {
   const key = new ECKey(Buffer.from(pk, 'base64'));
-  return key.publicKey.toString('base64');
+  return key.publicKey.toString('hex');
 };
 
 export const downloadPK = () => {

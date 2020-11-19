@@ -34,7 +34,6 @@ import BlocksView from "nomad-universal/lib/components/UserView/BlocksView";
 import UserDirectoryView from "nomad-universal/lib/components/UserDirectoryView";
 import {
   useCreateNewView,
-  useFetchCurrentUserData,
   useLikePost,
   useSaveCustomView,
   useSendPost,
@@ -42,10 +41,10 @@ import {
   useFollowUser,
   useBlockUser,
 } from "../../utils/hooks";
-import Settings from "../Setting";
 import ComposeView from "nomad-universal/lib/components/ComposeView";
 import {decrypt, encrypt} from "nomad-universal/lib/utils/key";
 import {useFetchHSDData} from "nomad-universal/lib/ducks/app";
+import Settings from "nomad-universal/lib/components/Setting";
 
 export default withRouter(Root);
 function Root(props: RouteComponentProps): ReactElement {
@@ -281,7 +280,9 @@ function renderSummary(): ReactNode {
         />
       </Route>
       <Route path="/settings">
-        <Settings />
+        <Settings
+          onSendPost={onSendPost}
+        />
       </Route>
       <Route path="/write">
         <ComposeView
