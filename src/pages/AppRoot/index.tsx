@@ -142,6 +142,10 @@ function renderSummary(): ReactNode {
     return [];
   }, []);
 
+  const onOpenLink = useCallback((url: string) => {
+    window.open(url, '_blank')
+  }, []);
+
   useEffect(() => {
     (async function() {
       if (currentUsername) {
@@ -161,6 +165,7 @@ function renderSummary(): ReactNode {
           onSendReply={onSendReply}
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
+          onOpenLink={onOpenLink}
         />
       </Route>
       <Route path="/users/:username/blocks">
@@ -184,6 +189,7 @@ function renderSummary(): ReactNode {
           onSendReply={onSendReply}
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
+          onOpenLink={onOpenLink}
         />
       </Route>
       <Route path="/welcome-to-nomad">
@@ -203,10 +209,12 @@ function renderSummary(): ReactNode {
             parentHashes: [],
             allowedTags: ['release', 'tips', 'bugs', 'announcements', '*'],
           }}
+          onOpenLink={onOpenLink}
         />
       </Route>
       <Route path="/directory">
         <UserDirectoryView
+          onFollowUser={onFollowUser}
         />
       </Route>
       <Route path="/discover">
@@ -215,6 +223,7 @@ function renderSummary(): ReactNode {
           onSendReply={onSendReply}
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
+          onOpenLink={onOpenLink}
         />
       </Route>
       <Route path="/views/:viewIndex">
@@ -223,6 +232,7 @@ function renderSummary(): ReactNode {
           onSendReply={onSendReply}
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
+          onOpenLink={onOpenLink}
         />
       </Route>
       <Route path="/search">
@@ -231,6 +241,7 @@ function renderSummary(): ReactNode {
           onSendReply={onSendReply}
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
+          onOpenLink={onOpenLink}
         />
       </Route>
       <Route path="/home">
@@ -239,6 +250,7 @@ function renderSummary(): ReactNode {
           onSendReply={onSendReply}
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
+          onOpenLink={onOpenLink}
         />
       </Route>
       <Route path="/custom-view/:viewIndex">
@@ -247,6 +259,7 @@ function renderSummary(): ReactNode {
           onSendReply={onSendReply}
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
+          onOpenLink={onOpenLink}
         />
       </Route>
       <Route path="/login/:username">
@@ -289,6 +302,7 @@ function renderSummary(): ReactNode {
           onFileUpload={() => Promise.reject('not supported')}
           // @ts-ignore
           onSendPost={onSendPost}
+          onOpenLink={onOpenLink}
         />
       </Route>
       <Route>
@@ -317,9 +331,9 @@ function renderPanels(): ReactNode {
       </Route>
       <Route path="/search">
         <div className="panels">
-        <SearchPanels
-          onCreateNewView={onCreateNewView}
-        />
+          <SearchPanels
+            onCreateNewView={onCreateNewView}
+          />
         </div>
       </Route>
       <Route path="/directory">
