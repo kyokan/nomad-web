@@ -39,7 +39,7 @@ import {
   useSendPost,
   useSendReply,
   useFollowUser,
-  useBlockUser,
+  useBlockUser, useFileUpload,
 } from "../../utils/hooks";
 import ComposeView from "nomad-universal/lib/components/ComposeView";
 import {decrypt, encrypt} from "nomad-universal/lib/utils/key";
@@ -120,6 +120,7 @@ function renderSummary(): ReactNode {
   const fetchUser = useFetchUser();
   const fetchBlob = useFetchBlobInfo();
   const currentUsername = useCurrentUsername();
+  const onFileUpload = useFileUpload();
 
   const onTLDLogin = useCallback(async (tld: string, password: string) => {
     const {token} = getIdentity();
@@ -166,6 +167,7 @@ function renderSummary(): ReactNode {
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
           onOpenLink={onOpenLink}
+          onFileUpload={onFileUpload}
         />
       </Route>
       <Route path="/users/:username/blocks">
@@ -190,6 +192,7 @@ function renderSummary(): ReactNode {
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
           onOpenLink={onOpenLink}
+          onFileUpload={onFileUpload}
         />
       </Route>
       <Route path="/welcome-to-nomad">
@@ -198,6 +201,7 @@ function renderSummary(): ReactNode {
           onSendReply={onSendReply}
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
+          onFileUpload={onFileUpload}
           headerActions={[]}
           title={'Welcome To Nomad!'}
           heroImageUrl=""
@@ -224,6 +228,7 @@ function renderSummary(): ReactNode {
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
           onOpenLink={onOpenLink}
+          onFileUpload={onFileUpload}
         />
       </Route>
       <Route path="/views/:viewIndex">
@@ -233,6 +238,7 @@ function renderSummary(): ReactNode {
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
           onOpenLink={onOpenLink}
+          onFileUpload={onFileUpload}
         />
       </Route>
       <Route path="/search">
@@ -242,6 +248,7 @@ function renderSummary(): ReactNode {
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
           onOpenLink={onOpenLink}
+          onFileUpload={onFileUpload}
         />
       </Route>
       <Route path="/home">
@@ -251,6 +258,7 @@ function renderSummary(): ReactNode {
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
           onOpenLink={onOpenLink}
+          onFileUpload={onFileUpload}
         />
       </Route>
       <Route path="/custom-view/:viewIndex">
@@ -260,6 +268,7 @@ function renderSummary(): ReactNode {
           onBlockUser={onBlockUser}
           onFollowUser={onFollowUser}
           onOpenLink={onOpenLink}
+          onFileUpload={onFileUpload}
         />
       </Route>
       <Route path="/login/:username">
@@ -299,8 +308,7 @@ function renderSummary(): ReactNode {
       </Route>
       <Route path="/write">
         <ComposeView
-          onFileUpload={() => Promise.reject('not supported')}
-          // @ts-ignore
+          onFileUpload={onFileUpload}
           onSendPost={onSendPost}
           onOpenLink={onOpenLink}
         />

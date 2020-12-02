@@ -59,6 +59,7 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
+    "@nebulous/skynet": "^2.0.1",
     "@types/marked": "^0.7.2",
     "binstring": "^0.2.1",
     "body-parser": "^1.19.0",
@@ -82,7 +83,7 @@
     "markdown-draft-js": "^2.1.1",
     "marked": "^0.8.0",
     "moment": "^2.24.0",
-    "nomad-universal": "^1.1.6",
+    "nomad-universal": "^1.1.8",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-redux": "^7.2.2",
@@ -93,6 +94,7 @@
     "redux-thunk": "^2.3.0",
     "remarkable": "^2.0.0",
     "rss-parser": "^3.7.5",
+    "skynet-js": "^2.9.0",
     "static-server": "^2.2.1",
     "winston": "^3.2.1"
   }

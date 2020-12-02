@@ -329,6 +329,36 @@ export const useFollowUser = () => {
   ]);
 };
 
+export const useFileUpload = () => {
+  return useCallback(async (cb: (file: File, skylink: string, prog: number) => Promise<void>): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+
+      input.onchange = async e => {
+        try {
+          // @ts-ignore
+          const files = e?.target?.files || [];
+          const file = files[0];
+          const formData = new FormData();
+          formData.append('file', file);
+          const resp = await fetch('https://siasky.net/skynet/skyfile', {
+            method: 'POST',
+            body: formData,
+          });
+          const json = await resp.json();
+          await cb(file, `sia://${json.skylink}`, 1);
+          input.remove();
+          resolve();
+        } catch (e) {
+          reject(e);
+        }
+      };
+      input.click();
+    });
+  }, []);
+};
+
 export const useBlockUser = () => {
   const dispatch = useDispatch();
   const currentUser: User = useCurrentUser();
