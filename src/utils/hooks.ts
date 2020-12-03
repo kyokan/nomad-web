@@ -147,8 +147,10 @@ export const useSendPost = () => {
     const offset = await fetchBlobOffset(currentUser.name);
     const payload = mapDraftToPostPayload(draft);
     const {tld} = getIdentity();
+    console.log(payload)
     const post = {
       title: payload.title,
+      subtype: payload.subtype,
       body: payload.content,
       reference: payload.parent,
       topic: payload.topic,
