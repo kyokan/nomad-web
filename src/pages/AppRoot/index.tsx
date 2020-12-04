@@ -304,6 +304,7 @@ function renderSummary(): ReactNode {
       <Route path="/settings">
         <Settings
           onSendPost={onSendPost}
+          onFileUpload={onFileUpload}
         />
       </Route>
       <Route path="/write">
