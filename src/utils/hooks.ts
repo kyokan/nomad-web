@@ -21,6 +21,7 @@ import {addLikeCount, appendNewComment, createNewPost, updatePost} from "nomad-u
 import {getIdentity, sign} from "./localStorage";
 import {setSendingReplies, useReplies} from "nomad-universal/lib/ducks/drafts/replies";
 import {AppRootState} from "../store/configureAppStore";
+import {ModerationType} from "fn-client/lib/application/Moderation";
 
 export const useCreateNewView = () => {
   const dispatch = useDispatch();
@@ -142,12 +143,13 @@ export function useFetchCurrentUserData () {
 export const useSendPost = () => {
   const dispatch = useDispatch();
   const currentUser: User = useCurrentUser();
+  const sendModeration = useSendModeration();
 
   return useCallback(async (draft: DraftPost, truncate?) => {
     const offset = await fetchBlobOffset(currentUser.name);
     const payload = mapDraftToPostPayload(draft);
     const {tld} = getIdentity();
-    console.log(payload)
+
     const post = {
       title: payload.title,
       subtype: payload.subtype,
@@ -157,44 +159,32 @@ export const useSendPost = () => {
       tags: payload.tags,
     };
 
-    const resp = await fetch(`${INDEXER_API}/relayer/precommit`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // 'X-API-Token': token || '',
-      },
-      body: JSON.stringify({
-        tld,
-        post,
-        offset: offset,
-        truncate,
-      }),
+    const resp = await precommit({
+      tld,
+      post,
+      offset: offset,
+      truncate,
     });
-    const json = await resp.json();
-    const {refhash, sealedHash, envelope} = json.payload;
+    const {refhash, sealedHash, envelope} = resp;
     const sig = sign(Buffer.from(sealedHash, 'hex'));
 
-    const resp2 = await fetch(`${INDEXER_API}/relayer/commit`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        tld,
-        post,
-        date: envelope.timestamp,
-        sealedHash,
-        sig: sig.toString('hex'),
-        refhash,
-        offset: offset,
-        truncate,
-      }),
+    await commit({
+      tld,
+      post,
+      date: envelope.timestamp,
+      sealedHash,
+      sig: sig.toString('hex'),
+      refhash,
+      offset: offset,
+      truncate,
     });
 
-    const json2: any = await resp2.json();
+    if (draft.moderationType === 'SETTINGS__NO_BLOCKS') {
+      await sendModeration(refhash, 'SETTINGS__NO_BLOCKS');
+    }
 
-    if (json2.error) {
-      throw new Error(json2.payload as string);
+    if (draft.moderationType === 'SETTINGS__FOLLOWS_ONLY') {
+      await sendModeration(refhash, 'SETTINGS__FOLLOWS_ONLY');
     }
 
     dispatch(updatePost(createNewPost({
@@ -210,7 +200,7 @@ export const useSendPost = () => {
       parent: post.reference,
     })));
 
-    return json.payload;
+    return resp;
   }, [
     dispatch,
     currentUser.name,
@@ -241,6 +231,7 @@ export const useSendReply = () => {
     const {tld} = getIdentity();
     const post = {
       title: payload.title,
+      subtype: payload.subtype,
       body: payload.content,
       reference: payload.parent,
       topic: payload.topic,
@@ -268,7 +259,7 @@ export const useSendReply = () => {
     dispatch(updatePost(createNewPost({
       hash: refhash,
       id: '',
-      type: PostType.ORIGINAL,
+      type: PostType.COMMENT,
       creator: serializeUsername('', tld),
       timestamp: new Date(envelope.timestamp).getTime(),
       content: post.body,
@@ -463,6 +454,64 @@ export const useLikePost = () => {
     ));
 
     dispatch(addLikeCount(reference, 1));
+
+    return json.payload;
+  }, [
+    dispatch,
+    currentUser.name,
+  ]);
+};
+
+export const useSendModeration = () => {
+  const dispatch = useDispatch();
+  const currentUser: User = useCurrentUser();
+
+  return useCallback(async (reference: string, type: ModerationType) => {
+    const offset = await fetchBlobOffset(currentUser.name);
+    const {tld} = getIdentity();
+    const moderation = {
+      reference,
+      type,
+    };
+
+    const resp = await fetch(`${INDEXER_API}/relayer/precommit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // 'X-API-Token': token || '',
+      },
+      body: JSON.stringify({
+        tld,
+        moderation,
+        offset,
+      }),
+    });
+    const json = await resp.json();
+    const {refhash, sealedHash, envelope} = json.payload;
+    const sig = sign(Buffer.from(sealedHash, 'hex'));
+
+    const resp2 = await fetch(`${INDEXER_API}/relayer/commit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tld,
+        moderation,
+        offset,
+        sig: sig.toString('hex'),
+        // precommit data
+        date: envelope.timestamp,
+        sealedHash,
+        refhash,
+      }),
+    });
+
+    const json2: any = await resp2.json();
+
+    if (json2.error) {
+      throw new Error(json2.payload as string);
+    }
 
     return json.payload;
   }, [

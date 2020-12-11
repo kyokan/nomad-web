@@ -1,4 +1,4 @@
-import React, {ReactElement, ReactNode, useCallback, useEffect} from "react";
+import React, {ReactElement, ReactNode, useCallback, useEffect, useState} from "react";
 import {Redirect, Route, Switch, withRouter, RouteComponentProps} from "react-router";
 import "../index.scss";
 import "./root.scss";
@@ -17,6 +17,7 @@ import {
 } from "nomad-universal/lib/ducks/users";
 import {useDispatch} from "react-redux";
 import HomeView from "nomad-universal/lib/components/HomeView";
+import HomePanels from "nomad-universal/lib/components/HomePanels";
 import Logo from "../../../static/assets/icons/logo-blue.svg";
 import DiscoverPanels from "nomad-universal/lib/components/DiscoverPanels";
 import UserPanels from "nomad-universal/lib/components/UserPanels";
@@ -42,9 +43,11 @@ import {
   useBlockUser, useFileUpload,
 } from "../../utils/hooks";
 import ComposeView from "nomad-universal/lib/components/ComposeView";
+import ComposeModal from "nomad-universal/lib/components/ComposeModal";
 import {decrypt, encrypt} from "nomad-universal/lib/utils/key";
 import {useFetchHSDData} from "nomad-universal/lib/ducks/app";
 import Settings from "nomad-universal/lib/components/Setting";
+import {addBlocklist} from "nomad-universal/lib/ducks/blocklist";
 
 export default withRouter(Root);
 function Root(props: RouteComponentProps): ReactElement {
@@ -52,6 +55,7 @@ function Root(props: RouteComponentProps): ReactElement {
   const currentUsername = useCurrentUsername();
   const fetchUser = useFetchUser();
   const fetchHSDData = useFetchHSDData();
+  const [loading, setLoading] = useState(true);
 
   const logout = useCallback(async () => {
     await clearPK();
@@ -59,6 +63,10 @@ function Root(props: RouteComponentProps): ReactElement {
 
   useEffect(() => {
     fetchHSDData();
+    dispatch(addBlocklist({
+      connectorTLD: '9325',
+    }, true));
+    setLoading(false);
   }, [dispatch]);
 
   useEffect(() => {
@@ -89,6 +97,15 @@ function Root(props: RouteComponentProps): ReactElement {
   const summary = renderSummary();
   const panels = renderPanels();
 
+  const [showEditor, setShowEditor] = useState(false);
+
+  const onOpenLink = useCallback((url: string) => {
+    window.open(url, '_blank')
+  }, []);
+
+  const onFileUpload = useFileUpload();
+  const onSendPost = useSendPost();
+
   return (
     <div className="app">
       <AppHeader
@@ -96,19 +113,29 @@ function Root(props: RouteComponentProps): ReactElement {
         onLogout={logout}
         onDownloadKeystore={downloadPK}
         onSetting={isLoggedIn() ? () => props.history.push('/settings') : undefined}
+        onCompose={() => setShowEditor(true)}
         signupText="Add User"
         signup
       />
       <div className="content">
         <div className="content__body">
-          { summary }
-          { panels }
+          { !loading && summary }
+          { !loading && panels }
         </div>
       </div>
+      {
+        showEditor && (
+          <ComposeModal
+            onClose={() => setShowEditor(false)}
+            onFileUpload={onFileUpload}
+            onSendPost={onSendPost}
+            onOpenLink={onOpenLink}
+          />
+        )
+      }
     </div>
   );
 }
-
 
 function renderSummary(): ReactNode {
   const dispatch = useDispatch();
@@ -349,7 +376,9 @@ function renderPanels(): ReactNode {
         <div className="panels" />
       </Route>
       <Route path="/home">
-        <div className="panels" />
+        <div className="panels">
+          <HomePanels />
+        </div>
       </Route>
       <Route path="/posts/:postHash">
         <div className="panels" />
